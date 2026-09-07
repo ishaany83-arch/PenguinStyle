@@ -1,0 +1,14 @@
+{
+  "name": "web-game-proxy",
+  "version": "1.0.0",
+  "description": "Lightweight, unrestricted web proxy application for hosting web-based gaming assets on a free cloud tier",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.21.2",
+    "http-proxy-middleware": "^3.0.3"
+  }
+}
