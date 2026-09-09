@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Web Game Proxy</title>
+  <title>GameLandPenguin Server1B</title>
   <style>
     * {
       box-sizing: border-box;
@@ -83,6 +83,10 @@
       border-radius: 8px;
       cursor: pointer;
       transition: opacity 0.2s, transform 0.1s;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
     }
 
     button:hover {
@@ -93,17 +97,41 @@
       transform: scale(0.98);
     }
 
-    .game-container {
-      aspect-ratio: 16 / 9;
+    .fullscreen-btn {
+      background: #334155;
+      margin-top: 1rem;
+    }
+
+    .fullscreen-btn:hover {
+      background: #475569;
+    }
+
+    .game-wrapper {
       width: 100%;
       max-width: 1200px;
       margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+    }
+
+    .game-container {
+      aspect-ratio: 16 / 9;
+      width: 100%;
       background: #1e293b;
       border-radius: 16px;
       overflow: hidden;
       border: 1px solid #334155;
       box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
       position: relative;
+    }
+
+    .game-container:fullscreen {
+      width: 100vw;
+      height: 100vh;
+      max-width: none;
+      border-radius: 0;
+      border: none;
     }
 
     iframe {
@@ -136,7 +164,7 @@
 </head>
 <body>
   <header>
-    <h1>Web Game Tunnel</h1>
+    <h1>GameLandPenguin Server1B</h1>
     <p class="subtitle">Lightweight, unrestricted proxy container for web-based gaming assets</p>
   </header>
 
@@ -152,15 +180,23 @@
     </form>
   </div>
 
-  <div class="game-container">
-    <div id="placeholder" class="placeholder">
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-        <path stroke-linecap="round" stroke-linejoin="round" d="M15.91 11.672a.375.375 0 0 1 0 .656l-5.603 3.113a.375.375 0 0 1-.557-.328V8.887c0-.286.307-.466.557-.327l5.603 3.112Z" />
-      </svg>
-      <p>Enter a URL above and click "Launch Game" to load in widescreen view.</p>
+  <div class="game-wrapper">
+    <div class="game-container" id="gameContainer">
+      <div id="placeholder" class="placeholder">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15.91 11.672a.375.375 0 0 1 0 .656l-5.603 3.113a.375.375 0 0 1-.557-.328V8.887c0-.286.307-.466.557-.327l5.603 3.112Z" />
+        </svg>
+        <p>Enter a URL above and click "Launch Game" to load in widescreen view.</p>
+      </div>
+      <iframe id="gameFrame" src="about:blank" allow="fullscreen" allowfullscreen></iframe>
     </div>
-    <iframe id="gameFrame" src="about:blank" allowfullscreen></iframe>
+    <button type="button" id="fullscreenBtn" class="fullscreen-btn">
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M4 8V4m0 0h4M4 4l5 5m11-5h-4m4 0v4m0-4l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+      </svg>
+      Fullscreen
+    </button>
   </div>
 
   <script>
@@ -168,6 +204,8 @@
     const input = document.getElementById('targetUrl');
     const iframe = document.getElementById('gameFrame');
     const placeholder = document.getElementById('placeholder');
+    const container = document.getElementById('gameContainer');
+    const fullscreenBtn = document.getElementById('fullscreenBtn');
 
     form.addEventListener('submit', (e) => {
       e.preventDefault();
@@ -177,6 +215,22 @@
       const proxyUrl = '/game-tunnel?url=' + encodeURIComponent(rawUrl);
       placeholder.style.display = 'none';
       iframe.src = proxyUrl;
+    });
+
+    fullscreenBtn.addEventListener('click', () => {
+      if (!document.fullscreenElement) {
+        if (container.requestFullscreen) {
+          container.requestFullscreen();
+        } else if (container.webkitRequestFullscreen) {
+          container.webkitRequestFullscreen();
+        } else if (container.msRequestFullscreen) {
+          container.msRequestFullscreen();
+        }
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        }
+      }
     });
   </script>
 </body>
