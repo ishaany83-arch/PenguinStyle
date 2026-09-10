@@ -8,7 +8,7 @@ A lightweight, unrestricted web proxy application for hosting web-based gaming a
 - ⚡ Fast caching with 7-day max-age headers
 - 🔒 Strips security headers (X-Frame-Options, CSP) for embedded content
 - 📱 Responsive UI with fullscreen support
-- 🚀 Easy deployment to Railway + GitHub Pages
+- 🚀 Easy deployment to Fly.io + GitHub Pages
 - ✅ Whitelist support for trusted gaming domains
 
 ## Supported Gaming Sites
@@ -22,8 +22,8 @@ A lightweight, unrestricted web proxy application for hosting web-based gaming a
 ## Architecture
 
 - **Frontend:** Static HTML/CSS/JS hosted on GitHub Pages
-- **Backend:** Express.js proxy server hosted on Railway
-- **Communication:** Frontend sends requests to Railway backend at `/game-tunnel?url=<target>`
+- **Backend:** Express.js proxy server hosted on Fly.io
+- **Communication:** Frontend sends requests to Fly.io backend at `/game-tunnel?url=<target>`
 
 ## Setup & Deployment
 
@@ -31,8 +31,9 @@ A lightweight, unrestricted web proxy application for hosting web-based gaming a
 
 - Node.js 18+
 - npm or yarn
-- Railway account (free tier: [railway.app](https://railway.app))
+- Fly.io account (free tier: [fly.io](https://fly.io))
 - GitHub account with Pages enabled
+- Fly CLI installed: `npm install -g flyctl`
 
 ### Local Development
 
@@ -49,37 +50,65 @@ npm start
 
 Visit `http://localhost:3000` in your browser.
 
-### Deploy to Railway
+### Deploy to Fly.io
 
-1. Push to GitHub
-2. Go to [Railway Dashboard](https://railway.app)
-3. Click "New Project" → "Deploy from GitHub repo"
-4. Select `ishaany83-arch/PenguinStyle`
-5. Add environment variables from `.env.example`
-6. Railway auto-deploys on every push
-7. Copy your Railway URL (e.g., `https://penguin-style-prod.up.railway.app`)
+1. **Install Fly CLI:**
+   ```bash
+   npm install -g flyctl
+   ```
 
-### Connect Frontend to Railway Backend
+2. **Log in to Fly:**
+   ```bash
+   flyctl auth login
+   ```
 
-Update `public/index.html` to use your Railway backend URL:
+3. **Initialize Fly app:**
+   ```bash
+   flyctl launch
+   ```
+   - Choose an app name (e.g., `penguin-style-proxy`)
+   - Choose region (e.g., `sjc` for San Jose)
+   - Say "No" to adding a database
+   - Say "Yes" to deploying now
+
+4. **Set environment variables:**
+   ```bash
+   flyctl secrets set ALLOWED_HOSTS=roblox.com,y8.com,coolmathgames.com,now.gg,youtube.com
+   flyctl secrets set NODE_ENV=production
+   flyctl secrets set RATE_LIMIT_MAX_REQUESTS=30
+   ```
+
+5. **Deploy:**
+   ```bash
+   flyctl deploy
+   ```
+
+6. **Get your Fly URL:**
+   ```bash
+   flyctl info
+   ```
+   Your app will be at: `https://penguin-style-proxy.fly.dev`
+
+### Connect Frontend to Fly.io Backend
+
+Update `public/index.html` to use your Fly.io backend URL:
 
 ```javascript
-const apiUrl = 'https://your-railway-app.up.railway.app';
+const apiUrl = 'https://penguin-style-proxy.fly.dev'; // Replace with your Fly app name
 const proxyUrl = apiUrl + '/game-tunnel?url=' + encodeURIComponent(rawUrl);
 ```
 
-Or use the auto-loaded config from `public/config.js` by setting the env var in Railway:
+Or use environment variable in your `public/config.js`:
 
-```
-REACT_APP_API_URL=https://your-railway-app.up.railway.app
+```javascript
+const API_URL = 'https://penguin-style-proxy.fly.dev'; // Set during build
 ```
 
 ### Deploy Frontend to GitHub Pages
 
 1. Go to repo Settings → Pages
 2. Set source to `gh-pages` branch
-3. The GitHub Actions workflow (`.github/workflows/deploy-pages.yml`) automatically deploys on push to main
-4. Frontend is live at: `https://ishaany83-arch.github.io/PenguinStyle/`
+3. Frontend is live at: `https://ishaany83-arch.github.io/PenguinStyle/`
 
 ## Environment Variables
 
@@ -100,7 +129,7 @@ See `.env.example` for all available options:
 - ✅ Whitelist is enabled by default for gaming sites only
 - ✅ Rate limiting prevents abuse (30 requests/minute)
 - ✅ SSRF protection blocks localhost and internal addresses
-- ✅ Monitor bandwidth usage on Railway
+- ✅ Monitor bandwidth usage on Fly.io
 - ❌ Do NOT expose without authentication in public production
 
 ## API Endpoints
@@ -110,7 +139,7 @@ See `.env.example` for all available options:
 Health check endpoint.
 
 ```bash
-curl https://your-railway-app.up.railway.app/status
+curl https://penguin-style-proxy.fly.dev/status
 ```
 
 Response:
@@ -129,30 +158,50 @@ Response:
 Proxy endpoint for embedding content.
 
 ```bash
-curl 'https://your-railway-app.up.railway.app/game-tunnel?url=https://roblox.com'
+curl 'https://penguin-style-proxy.fly.dev/game-tunnel?url=https://roblox.com'
+```
+
+## Fly.io Useful Commands
+
+```bash
+# View logs
+flyctl logs
+
+# Redeploy
+flyctl deploy
+
+# Scale up/down
+flyctl scale count web=2
+
+# List apps
+flyctl apps list
+
+# Destroy app
+flyctl apps destroy penguin-style-proxy
 ```
 
 ## Troubleshooting
 
-### 404 on Railway
+### App won't deploy
 
-- Check that Railway has the correct start command: `node server.js`
-- Verify `PORT` env var matches Railway's assigned port
+- Check Fly.io logs: `flyctl logs`
+- Ensure `Procfile` exists with `web: node server.js`
+- Verify Node.js version in `fly.toml`
 
 ### CORS errors in browser
 
 - Ensure `cors()` middleware is enabled in `server.js`
-- Check Railway backend URL in frontend code
+- Check Fly.io backend URL in frontend code
 
 ### Proxy returns 403 Forbidden
 
 - Requested domain is not in the whitelist
-- Update `ALLOWED_HOSTS` in Railway environment variables
+- Update via: `flyctl secrets set ALLOWED_HOSTS=...`
 
 ### Proxy returns 502 Bad Gateway
 
 - Target URL may be unreachable or blocked
-- Check Railway logs: `railway logs`
+- Check Fly.io logs: `flyctl logs`
 - Verify the target URL is publicly accessible
 
 ## License
